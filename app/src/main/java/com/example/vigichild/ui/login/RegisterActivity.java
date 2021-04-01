@@ -21,6 +21,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.vigichild.R;
 import com.example.vigichild.core.LaunchingApp;
+import com.example.vigichild.core.SelectModeActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
@@ -42,7 +43,7 @@ public class RegisterActivity extends AppCompatActivity {
 
         mAuth = FirebaseAuth.getInstance();
         final EditText usernameEditText = findViewById(R.id.username_register);
-        final EditText passwordEditText = findViewById(R.id.password);
+        final EditText passwordEditText = findViewById(R.id.password_register);
         final Button goToLogin = findViewById(R.id.change_to_login);
         final Button register = findViewById(R.id.validate_register);
         loadingProgressBar = findViewById(R.id.loading_register);
@@ -124,7 +125,7 @@ public class RegisterActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                registerUser(usernameEditText.getText().toString(), passwordEditText.toString());
+                registerUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
     }
@@ -171,6 +172,7 @@ public class RegisterActivity extends AppCompatActivity {
     }
 
     private void switchToNextActivity() {
-        //TODO implémenter le switch vers l'activité de sélection de type (parent / enfant), penser à sauvegarder l'état et le n° d'enregistrement
+        Intent intent = new Intent(this, SelectModeActivity.class);
+        startActivity(intent);
     }
 }

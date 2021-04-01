@@ -7,6 +7,7 @@ import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -27,7 +28,6 @@ import com.example.vigichild.core.LaunchingApp;
 import com.example.vigichild.core.SelectModeActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.FirebaseApp;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -38,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     private FirebaseAuth mAuth;
     private final String TAG = "LoginActivity";
     private ProgressBar loadingProgressBar;
+    private final String PREF_FILE = "preferences";
+    private final String MODE = "mode";
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,7 +51,7 @@ public class LoginActivity extends AppCompatActivity {
                 .get(LoginViewModel.class);
 
         final EditText usernameEditText = findViewById(R.id.username);
-        final EditText passwordEditText = findViewById(R.id.password);
+        final EditText passwordEditText = findViewById(R.id.password_login);
         final Button loginButton = findViewById(R.id.login);
         loadingProgressBar = findViewById(R.id.loading_login);
         final Button changeToRegisterButton = findViewById(R.id.swich_to_register);
@@ -122,7 +124,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginUser(usernameEditText.getText().toString(), passwordEditText.toString());
+                loginUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
             }
         });
 
@@ -150,10 +152,12 @@ public class LoginActivity extends AppCompatActivity {
                                 LaunchingApp app = (LaunchingApp) getApplicationContext();
                                 app.setCurrentUser(new LoggedInUser(user.getDisplayName(), user.getEmail(), user.getUid()));
                                 loadingProgressBar.setVisibility(View.INVISIBLE);
+                                //TODO modifier si jamais le mode exise déjà ?
                                 switchToNextActivity();
                             } else {
                                 // If sign in fails, display a message to the user.
                                 Log.w("signInWithEmail:failure", task.getException());
+                                Log.w("signInWithEmail:failure", "username " + toString + " pass " + toString1);
                                 Toast.makeText(getApplicationContext(), "Authentication failed.",
                                         Toast.LENGTH_SHORT).show();
                                 loadingProgressBar.setVisibility(View.INVISIBLE);
@@ -164,6 +168,14 @@ public class LoginActivity extends AppCompatActivity {
             Log.w("signInWithEmail:error", "User already logged in");
             LaunchingApp app = (LaunchingApp) getApplicationContext();
             app.setCurrentUser(new LoggedInUser(currentUser.getDisplayName(), currentUser.getEmail(), currentUser.getUid()));
+            SharedPreferences sharedPreferences = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+            String mode = sharedPreferences.getString(MODE, null);
+            if (mode == null) {
+                Log.w("launchingapp:failure", "Failed to retrieve mode");
+                Intent intent = new Intent(this, SelectModeActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                startActivity(intent);
+            }
             loadingProgressBar.setVisibility(View.INVISIBLE);
         }
     }
