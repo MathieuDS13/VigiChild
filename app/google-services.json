@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "856004255397",
+    "firebase_url": "https://vigichild-b905b-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "vigichild-b905b",
+    "storage_bucket": "vigichild-b905b.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:856004255397:android:b7ea9841acbd816d92f74c",
+        "android_client_info": {
+          "package_name": "com.example.vigichild"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "856004255397-gif10ll8j9250v0tb2esun57lj1057fk.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCENg41rJMiCO3v7xs6H2GZktiXzbxTF2I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "856004255397-gif10ll8j9250v0tb2esun57lj1057fk.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
