@@ -16,4 +16,8 @@
     <string name="child_mode_desc">Child mode : set this phone as your child\'s phone and monitor it</string>
     <string name="button_parent_mode">Parent Mode</string>
     <string name="button_child_mode">Child Mode</string>
+    <string name="button_parent_menu_localise">Localise</string>
+    <string name="button_parent_menu_info_list">Info List</string>
+    <string name="button_parent_menu_interactions">Interactions</string>
+    <string name="button_parent_menu_access_data">Access Phone Data</string>
 </resources>

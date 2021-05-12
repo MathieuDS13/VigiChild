@@ -26,11 +26,14 @@ import android.widget.Toast;
 import com.example.vigichild.R;
 import com.example.vigichild.core.LaunchingApp;
 import com.example.vigichild.core.SelectModeActivity;
+import com.example.vigichild.parent_mode.ParentMenuActivity;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.security.SignatureException;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -124,7 +127,7 @@ public class LoginActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginUser(usernameEditText.getText().toString(), passwordEditText.getText().toString());
+                loginUser(usernameEditText.getText().toString(), passwordEditText.getText().toString(), v);
             }
         });
 
@@ -138,7 +141,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    private void loginUser(String toString, String toString1) {
+    private void loginUser(String toString, String toString1, View v) {
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
             mAuth.signInWithEmailAndPassword(toString, toString1)
@@ -158,7 +161,7 @@ public class LoginActivity extends AppCompatActivity {
                                 // If sign in fails, display a message to the user.
                                 Log.w("signInWithEmail:failure", task.getException());
                                 Log.w("signInWithEmail:failure", "username " + toString + " pass " + toString1);
-                                Toast.makeText(getApplicationContext(), "Authentication failed.",
+                                Toast.makeText(getApplicationContext(), "Authentication failed,\n please verify your internet connexion.",
                                         Toast.LENGTH_SHORT).show();
                                 loadingProgressBar.setVisibility(View.INVISIBLE);
                             }
@@ -169,12 +172,22 @@ public class LoginActivity extends AppCompatActivity {
             LaunchingApp app = (LaunchingApp) getApplicationContext();
             app.setCurrentUser(new LoggedInUser(currentUser.getDisplayName(), currentUser.getEmail(), currentUser.getUid()));
             SharedPreferences sharedPreferences = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-            String mode = sharedPreferences.getString(MODE, null);
-            if (mode == null) {
+            String mode = sharedPreferences.getString(MODE, "");
+            if (mode == null || mode.equals("")) {
                 Log.w("launchingapp:failure", "Failed to retrieve mode");
                 Intent intent = new Intent(this, SelectModeActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                startActivity(intent);
+                v.getContext().startActivity(intent);
+                boolean bool = mode == "Parent";
+                Log.w("test degal:", Boolean.toString(bool));
+            } else {
+                if (mode.equals("Child")) {
+                    //TODO ajouter le menu de l'enfant
+                } else if (mode.equals("Parent")) {
+                    Intent intent = new Intent(this, ParentMenuActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    v.getContext().startActivity(intent);
+                }
             }
             loadingProgressBar.setVisibility(View.INVISIBLE);
         }
