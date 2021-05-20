@@ -55,7 +55,6 @@ public class SelectModeActivity extends AppCompatActivity {
                 parentModeButton.setActivated(false);
                 Intent intent = new Intent(v.getContext(), ParentMenuActivity.class);
                 startActivity(intent);
-                //TODO lancer la bonne activité
             }
         });
     }

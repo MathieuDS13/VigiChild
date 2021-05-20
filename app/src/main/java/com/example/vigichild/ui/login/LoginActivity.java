@@ -24,6 +24,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import com.example.vigichild.R;
+import com.example.vigichild.child_mode.ChildMenuActivity;
 import com.example.vigichild.core.LaunchingApp;
 import com.example.vigichild.core.SelectModeActivity;
 import com.example.vigichild.parent_mode.ParentMenuActivity;
@@ -182,7 +183,9 @@ public class LoginActivity extends AppCompatActivity {
                 Log.w("test degal:", Boolean.toString(bool));
             } else {
                 if (mode.equals("Child")) {
-                    //TODO ajouter le menu de l'enfant
+                    Intent intent = new Intent(this, ChildMenuActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    v.getContext().startActivity(intent);
                 } else if (mode.equals("Parent")) {
                     Intent intent = new Intent(this, ParentMenuActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
@@ -196,12 +199,10 @@ public class LoginActivity extends AppCompatActivity {
     private void switchToNextActivity() {
         Intent intent = new Intent(this, SelectModeActivity.class);
         startActivity(intent);
-        //TODO implémenter le switch vers l'activité de sélection de type (parent / enfant), penser à sauvegarder l'état et le n° d'enregistrement
     }
 
     private void updateUiWithUser(LoggedInUserView model) {
         String welcome = getString(R.string.welcome) + model.getDisplayName();
-        // TODO : initiate successful logged in experience
         Toast.makeText(getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
     }
 

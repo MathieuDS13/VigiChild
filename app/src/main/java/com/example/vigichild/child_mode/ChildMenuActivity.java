@@ -26,6 +26,5 @@ public class ChildMenuActivity extends AppCompatActivity {
         }
 
         startService(intent);
-        //TODO lancer le service qui enregistre les localisations en ligne
     }
 }
