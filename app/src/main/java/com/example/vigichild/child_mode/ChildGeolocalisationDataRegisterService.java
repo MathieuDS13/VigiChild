@@ -1,5 +1,6 @@
 package com.example.vigichild.child_mode;
 
+import android.app.AlarmManager;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -9,13 +10,18 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.icu.lang.UCharacterEnums;
+import android.location.Location;
+import android.location.LocationManager;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Debug;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.telephony.ServiceState;
+import android.util.Log;
 import android.webkit.GeolocationPermissions;
 import android.widget.Toast;
 
@@ -25,6 +31,11 @@ import androidx.work.PeriodicWorkRequest;
 import androidx.work.WorkManager;
 
 import com.example.vigichild.R;
+import com.example.vigichild.core.LaunchingApp;
+import com.google.android.gms.common.api.GoogleApi;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.io.Console;
 import java.util.concurrent.TimeUnit;
@@ -33,8 +44,17 @@ public class ChildGeolocalisationDataRegisterService extends Service {
 
     private PowerManager.WakeLock wakeLock = null;
     private boolean isServiceStarted = false;
-    private HandlerThread handlerThread;
-    private Handler handler;
+    //private HandlerThread handlerThread;
+    //private Handler handler;
+    private static final String TAG = "CHILDGEOLOCALISATION";
+    private static final int LOCATION_INTERVAL = 120000;
+    private static final float LOCATION_DISTANCE = 5f;
+    LocationListener[] mLocationListeners = new LocationListener[]{
+            new LocationListener(LocationManager.GPS_PROVIDER),
+            new LocationListener(LocationManager.NETWORK_PROVIDER)
+    };
+    private LocationManager mLocationManager = null;
+    private DatabaseReference mDatabase;
 
     @Nullable
     @Override
@@ -45,17 +65,6 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         System.out.println("onStartCommand executed with id : " + startId);
-        String action = intent.getAction();
-        switch (action) {
-            case "START":
-                startService();
-                break;
-            case "STOP":
-                stopService();
-                break;
-            default:
-                System.out.println("This should never happen. No action in the received intent");
-        }
         // by returning this we make sure the service is restarted if the system kills the service
         return START_STICKY;
     }
@@ -63,7 +72,27 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        mDatabase = FirebaseDatabase.getInstance().getReference();
         System.out.println("The service has been created");
+        initializeLocationManager();
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.NETWORK_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[1]);
+        } catch (java.lang.SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "network provider does not exist, " + ex.getMessage());
+        }
+        try {
+            mLocationManager.requestLocationUpdates(
+                    LocationManager.GPS_PROVIDER, LOCATION_INTERVAL, LOCATION_DISTANCE,
+                    mLocationListeners[0]);
+        } catch (java.lang.SecurityException ex) {
+            Log.i(TAG, "fail to request location update, ignore", ex);
+        } catch (IllegalArgumentException ex) {
+            Log.d(TAG, "gps provider does not exist " + ex.getMessage());
+        }
         Notification notification = createNotification();
         startForeground(1, notification);
     }
@@ -73,78 +102,23 @@ public class ChildGeolocalisationDataRegisterService extends Service {
         super.onDestroy();
         System.out.println("The service has been destroyed");
         Toast.makeText(this, "Service destroyed", Toast.LENGTH_SHORT).show();
-        handlerThread.quit();
-    }
-
-    private void startService() {
-        if (isServiceStarted) return;
-
-        System.out.println("Starting the foreground geolocalisation task");
-        Toast.makeText(this, "Starting gelocalisation task", Toast.LENGTH_SHORT).show();
-
-        isServiceStarted = true;
-        //TODO voir par rapport au code en ligne, il manque la ligne setServiceState(...)
-        PowerManager powerManager = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, ChildGeolocalisationDataRegisterService.class.getName());
-        wakeLock.acquire();
-
-        /**
-         handlerThread = new HandlerThread("MyLocationThread");
-         handlerThread.setDaemon(true);
-         handlerThread.start();
-         handler = new Handler(handlerThread.getLooper());
-         // Every other call is up to you. You can update the location,
-         // do whatever you want after this part.
-
-         // Sample code (which should call handler.postDelayed()
-         // in the function as well to create the repetitive task.)
-         handler.postDelayed(new Runnable() {
-        @Override public void run() {
-        System.out.println("Geolocalisation de l'enfant");
-        //TODO code de géolocalisation
-        }
-        }, 6000);
-         **/
-
-        // Create the Handler object (on the main thread by default)
-        Handler handler = new Handler();
-        // Define the code block to be executed
-        Runnable runnableCode = new Runnable() {
-            @Override
-            public void run() {
-                // Do something here on the main thread
-                System.out.println("Geolocalisation de l'enfant de ses  morts");
-                // Repeat this the same runnable code block again another 2 seconds
-                // 'this' is referencing the Runnable object
-                handler.postDelayed(this, 2000);
-            }
-        };
-// Start the initial runnable task by posting through the handler
-        handler.post(runnableCode);
-    }
-
-    private boolean myFuncToUpdateLocation() {
-        return true;
-    }
-
-    private void stopService() {
-        System.out.println("Stopping the foreground service");
-        Toast.makeText(this, "Service stopping", Toast.LENGTH_SHORT).show();
-        try {
-            if (wakeLock != null) {
-                if (wakeLock.isHeld()) {
-                    wakeLock.release();
+        if (mLocationManager != null) {
+            for (int i = 0; i < mLocationListeners.length; i++) {
+                try {
+                    mLocationManager.removeUpdates(mLocationListeners[i]);
+                } catch (Exception ex) {
+                    Log.i(TAG, "fail to remove location listners, ignore", ex);
                 }
             }
-            stopForeground(true);
-            stopSelf();
-        } catch (Exception e) {
-            System.out.println("Service stopped without being started:" + e.getMessage());
         }
-        handlerThread.quit();
-        isServiceStarted = false;
+        //handlerThread.quit();
     }
 
+    /**
+     * Crée la notification qui permet au service de tourner au premier plan en continu
+     *
+     * @return
+     */
     private Notification createNotification() {
         String channelID = "GeolocalisationChannel";
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -171,5 +145,67 @@ public class ChildGeolocalisationDataRegisterService extends Service {
                 .setPriority(Notification.PRIORITY_HIGH)
                 .build();
 
+    }
+
+    /**
+     * Permet de redémarrer le service quand l'appli est fermée
+     *
+     * @param rootIntent
+     */
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        Intent restartService = new Intent(getApplicationContext(), ChildGeolocalisationDataRegisterService.class);
+        restartService.setPackage(getPackageName());
+        PendingIntent restartServicePending = PendingIntent.getService(this, 1, restartService, PendingIntent.FLAG_ONE_SHOT);
+        getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        AlarmManager alarmManager = (AlarmManager) getApplicationContext().getSystemService(Context.ALARM_SERVICE);
+        alarmManager.set(AlarmManager.ELAPSED_REALTIME, SystemClock.elapsedRealtime() + 1000, restartServicePending);
+    }
+
+    private void initializeLocationManager() {
+        Log.e(TAG, "initializeLocationManager");
+        if (mLocationManager == null) {
+            mLocationManager = (LocationManager) getApplicationContext().getSystemService(Context.LOCATION_SERVICE);
+        }
+    }
+
+    private void writeGeodata(Location location) {
+        LocationDTO loc = new LocationDTO(location);
+        if (location != null) {
+
+            mDatabase.child("Data").child("GeoData").child(LaunchingApp.currentUser.getRetrieveID()).setValue(loc);
+        }
+    }
+
+    private class LocationListener implements android.location.LocationListener {
+        Location mLastLocation;
+
+        public LocationListener(String provider) {
+            Log.e(TAG, "LocationListener " + provider);
+            mLastLocation = new Location(provider);
+        }
+
+        @Override
+        public void onLocationChanged(Location location) {
+            Log.e(TAG, "onLocationChanged: " + location);
+            writeGeodata(location);
+            mLastLocation.set(location);
+        }
+
+        @Override
+        public void onProviderDisabled(String provider) {
+            Log.e(TAG, "onProviderDisabled: " + provider);
+        }
+
+        @Override
+        public void onProviderEnabled(String provider) {
+            Log.e(TAG, "onProviderEnabled: " + provider);
+        }
+
+        @Override
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.e(TAG, "onStatusChanged: " + provider);
+        }
     }
 }

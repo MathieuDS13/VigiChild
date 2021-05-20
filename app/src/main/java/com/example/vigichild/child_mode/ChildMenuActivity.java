@@ -20,7 +20,6 @@ public class ChildMenuActivity extends AppCompatActivity {
         sendAlert = findViewById(R.id.button_child_alert_parent);
         accountSettings = findViewById(R.id.button_child_menu_account);
         Intent intent = new Intent(this, ChildGeolocalisationDataRegisterService.class);
-        intent.setAction(Actions.START.name());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent);
             return;

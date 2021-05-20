@@ -22,7 +22,7 @@ public class LaunchingApp extends Application {
 
     String retrieveID;
     FirebaseAuth mAuth;
-    LoggedInUser currentUser;
+    public static LoggedInUser currentUser;
     private final String PREF_FILE = "preferences";
     private final String MODE = "mode";
     //TODO ajouter les données que l'on souhaite persistantes à travers l'application
