@@ -10,6 +10,7 @@ import android.util.Log;
 
 import androidx.appcompat.app.AppCompatDelegate;
 
+import com.example.vigichild.child_mode.ChildMenuActivity;
 import com.example.vigichild.parent_mode.ParentMenuActivity;
 import com.example.vigichild.ui.login.LoggedInUser;
 import com.example.vigichild.ui.login.LoginActivity;
@@ -58,7 +59,9 @@ public class LaunchingApp extends Application {
             } else {
                 if (mode.equals("Child")) {
                     this.currentUser.setMode("Child");
-                    //TODO lancer la bonne activité
+                    Intent intent = new Intent(this, ChildMenuActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     return;
                 }
                 if (mode.equals("Parent")) {
@@ -66,7 +69,6 @@ public class LaunchingApp extends Application {
                     Intent intent = new Intent(this, ParentMenuActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                     startActivity(intent);
-                    //TODO lancer la bonne activité
                     return;
                 }
             }

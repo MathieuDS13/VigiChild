@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.vigichild.R;
+import com.example.vigichild.child_mode.ChildMenuActivity;
 import com.example.vigichild.parent_mode.ParentMenuActivity;
 
 public class SelectModeActivity extends AppCompatActivity {
@@ -37,6 +38,8 @@ public class SelectModeActivity extends AppCompatActivity {
                 Toast.makeText(getApplicationContext(), "Preference set to child mode", Toast.LENGTH_LONG).show();
                 childModeButton.setActivated(false);
                 parentModeButton.setActivated(false);
+                Intent intent = new Intent(v.getContext(), ChildMenuActivity.class);
+                startActivity(intent);
             }
         });
 

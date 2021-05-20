@@ -3,14 +3,14 @@
     package="com.example.vigichild">
 
     <application
-        android:allowBackup="true"
         android:name=".core.LaunchingApp"
+        android:allowBackup="true"
+        android:configChanges="orientation|keyboardHidden"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:configChanges="orientation|keyboardHidden"
         android:screenOrientation="portrait"
+        android:supportsRtl="true"
         android:theme="@style/Theme.VigiChild">
         <meta-data
             android:name="com.google.android.geo.API_KEY"
@@ -27,11 +27,17 @@
             </intent-filter>
         </activity>
         <activity
-            android:label="@string/app_name"
-            android:name=".ui.login.RegisterActivity" />
+            android:name=".ui.login.RegisterActivity"
+            android:label="@string/app_name" />
         <activity android:name=".core.SelectModeActivity" />
         <activity android:name=".parent_mode.ParentMenuActivity" />
         <activity android:name=".parent_mode.ParentLocalisationActivity" />
+        <activity android:name=".child_mode.ChildMenuActivity" />
+
+        <service
+            android:name=".child_mode.ChildGeolocalisationDataRegisterService"
+            android:enabled="true"
+            android:exported="false" />
     </application>
 
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"></uses-permission>

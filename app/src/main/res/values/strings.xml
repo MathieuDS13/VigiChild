@@ -20,4 +20,5 @@
     <string name="button_parent_menu_info_list">Info List</string>
     <string name="button_parent_menu_interactions">Interactions</string>
     <string name="button_parent_menu_access_data">Access Phone Data</string>
+    <string name="send_alert">Send Alert</string>
 </resources>
