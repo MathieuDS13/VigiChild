@@ -6,8 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.telephony.ServiceState;
+import android.view.contentcapture.DataShareWriteAdapter;
 
 import com.example.vigichild.core.LaunchingApp;
+
+import java.io.DataOutput;
+import java.io.DataOutputStream;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -31,5 +35,6 @@ public class StartReceiver extends BroadcastReceiver {
                 }
             }
         }
+
     }
 }

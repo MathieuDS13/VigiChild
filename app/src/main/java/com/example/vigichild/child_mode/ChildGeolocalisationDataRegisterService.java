@@ -9,36 +9,25 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.icu.lang.UCharacterEnums;
 import android.location.Location;
 import android.location.LocationManager;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Debug;
-import android.os.Handler;
-import android.os.HandlerThread;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
-import android.telephony.ServiceState;
 import android.util.Log;
-import android.webkit.GeolocationPermissions;
 import android.widget.Toast;
 
-import androidx.annotation.ColorInt;
 import androidx.annotation.Nullable;
-import androidx.work.PeriodicWorkRequest;
-import androidx.work.WorkManager;
 
 import com.example.vigichild.R;
 import com.example.vigichild.core.LaunchingApp;
-import com.google.android.gms.common.api.GoogleApi;
-import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.io.Console;
-import java.util.concurrent.TimeUnit;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 public class ChildGeolocalisationDataRegisterService extends Service {
 
@@ -47,7 +36,7 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     //private HandlerThread handlerThread;
     //private Handler handler;
     private static final String TAG = "CHILDGEOLOCALISATION";
-    private static final int LOCATION_INTERVAL = 120000;
+    private static final int LOCATION_INTERVAL = 2000;//120000;
     private static final float LOCATION_DISTANCE = 5f;
     LocationListener[] mLocationListeners = new LocationListener[]{
             new LocationListener(LocationManager.GPS_PROVIDER),
@@ -55,6 +44,9 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     };
     private LocationManager mLocationManager = null;
     private DatabaseReference mDatabase;
+    private final int SERVERPORT = 50005;
+    private Thread serverThread;
+    private ServerSocket serverSocket;
 
     @Nullable
     @Override
@@ -95,6 +87,9 @@ public class ChildGeolocalisationDataRegisterService extends Service {
         }
         Notification notification = createNotification();
         startForeground(1, notification);
+
+        this.serverThread = new Thread(new ServerThread());
+        this.serverThread.start();
     }
 
     @Override
@@ -206,6 +201,30 @@ public class ChildGeolocalisationDataRegisterService extends Service {
         @Override
         public void onStatusChanged(String provider, int status, Bundle extras) {
             Log.e(TAG, "onStatusChanged: " + provider);
+        }
+    }
+
+    private class ServerThread implements Runnable {
+        @Override
+        public void run() {
+            Socket socket = null;
+            try {
+                serverSocket = new ServerSocket(SERVERPORT);
+                //TODO enregistrer l'ip dans la bdd
+                while (!Thread.currentThread().isInterrupted()) {
+                    try {
+                        Log.w("Thread message", "Attente d'un client");
+                        socket = serverSocket.accept();
+
+                        //TODO lire le fichier
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 }
