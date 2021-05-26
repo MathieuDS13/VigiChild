@@ -29,7 +29,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class ChildGeolocalisationDataRegisterService extends Service {
+public class ChildPermanentService extends Service {
 
     private PowerManager.WakeLock wakeLock = null;
     private boolean isServiceStarted = false;
@@ -64,6 +64,22 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        initializeLocationListener(); //On crée l'écouteur de position qui enregistre les données dans la BDD
+        initializeAudioListener();
+
+        Notification notification = createNotification();
+        startForeground(1, notification);
+
+        this.serverThread = new Thread(new ServerThread());
+        this.serverThread.start();
+    }
+
+    private void initializeAudioListener() {
+        //TODO ajouter un ChildEventListener	onChildAdded() qui écoute quand un audio est ajouté et le lit
+    }
+
+    private void initializeLocationListener() {
         mDatabase = FirebaseDatabase.getInstance().getReference();
         System.out.println("The service has been created");
         initializeLocationManager();
@@ -85,11 +101,6 @@ public class ChildGeolocalisationDataRegisterService extends Service {
         } catch (IllegalArgumentException ex) {
             Log.d(TAG, "gps provider does not exist " + ex.getMessage());
         }
-        Notification notification = createNotification();
-        startForeground(1, notification);
-
-        this.serverThread = new Thread(new ServerThread());
-        this.serverThread.start();
     }
 
     @Override
@@ -150,7 +161,7 @@ public class ChildGeolocalisationDataRegisterService extends Service {
     @Override
     public void onTaskRemoved(Intent rootIntent) {
         super.onTaskRemoved(rootIntent);
-        Intent restartService = new Intent(getApplicationContext(), ChildGeolocalisationDataRegisterService.class);
+        Intent restartService = new Intent(getApplicationContext(), ChildPermanentService.class);
         restartService.setPackage(getPackageName());
         PendingIntent restartServicePending = PendingIntent.getService(this, 1, restartService, PendingIntent.FLAG_ONE_SHOT);
         getApplicationContext().getSystemService(Context.ALARM_SERVICE);
@@ -213,7 +224,7 @@ public class ChildGeolocalisationDataRegisterService extends Service {
                 //TODO enregistrer l'ip dans la bdd
                 while (!Thread.currentThread().isInterrupted()) {
                     try {
-                        Log.w("Thread message", "Attente d'un client");
+                        Log.w("Thread message", "Attente d'un client " + serverSocket.getInetAddress().getHostName());
                         socket = serverSocket.accept();
 
                         //TODO lire le fichier

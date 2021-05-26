@@ -35,7 +35,7 @@
         <activity android:name=".child_mode.ChildMenuActivity" />
 
         <service
-            android:name=".child_mode.ChildGeolocalisationDataRegisterService"
+            android:name=".child_mode.ChildPermanentService"
             android:enabled="true"
             android:exported="false" />
         <receiver

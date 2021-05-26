@@ -5,13 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
-import android.telephony.ServiceState;
-import android.view.contentcapture.DataShareWriteAdapter;
-
-import com.example.vigichild.core.LaunchingApp;
-
-import java.io.DataOutput;
-import java.io.DataOutputStream;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -27,7 +20,7 @@ public class StartReceiver extends BroadcastReceiver {
         if (mode == "Child") {
 
             if (intent.getAction() == Intent.ACTION_BOOT_COMPLETED) {
-                Intent toLaunch = new Intent(context, ChildGeolocalisationDataRegisterService.class);
+                Intent toLaunch = new Intent(context, ChildPermanentService.class);
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                     context.startForegroundService(toLaunch);
                 } else {
