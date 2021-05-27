@@ -11,21 +11,30 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.location.Location;
 import android.location.LocationManager;
+import android.media.AudioAttributes;
+import android.media.MediaPlayer;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.os.SystemClock;
+import android.provider.MediaStore;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.example.vigichild.R;
 import com.example.vigichild.core.LaunchingApp;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -38,6 +47,7 @@ public class ChildPermanentService extends Service {
     private static final String TAG = "CHILDGEOLOCALISATION";
     private static final int LOCATION_INTERVAL = 2000;//120000;
     private static final float LOCATION_DISTANCE = 5f;
+    private MediaPlayer mPlayer;
     LocationListener[] mLocationListeners = new LocationListener[]{
             new LocationListener(LocationManager.GPS_PROVIDER),
             new LocationListener(LocationManager.NETWORK_PROVIDER)
@@ -45,8 +55,6 @@ public class ChildPermanentService extends Service {
     private LocationManager mLocationManager = null;
     private DatabaseReference mDatabase;
     private final int SERVERPORT = 50005;
-    private Thread serverThread;
-    private ServerSocket serverSocket;
 
     @Nullable
     @Override
@@ -71,11 +79,62 @@ public class ChildPermanentService extends Service {
         Notification notification = createNotification();
         startForeground(1, notification);
 
-        this.serverThread = new Thread(new ServerThread());
-        this.serverThread.start();
     }
 
     private void initializeAudioListener() {
+        DatabaseReference ref = mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID());
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Log.i("Audio Player", "Update received playing audio");
+                Uri uri = Uri.parse(snapshot.getValue(String.class));
+                mPlayer = new MediaPlayer();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mPlayer.setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                    .setUsage(AudioAttributes.USAGE_ALARM)
+                                    .build());
+                }
+                try {
+                    mPlayer.setDataSource(uri.toString());
+                    mPlayer.prepare();
+                    mPlayer.start();
+                } catch (IOException e) {
+                    Log.e("Audio PLayer", "Fail to play audio : " + uri.toString());
+                    e.printStackTrace();
+                }
+
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.stop();
+                        mPlayer.release();
+                        mPlayer = null;
+                    }
+                });
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
+
+            }
+
+            @Override
+            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+
+            }
+        });
         //TODO ajouter un ChildEventListener	onChildAdded() qui écoute quand un audio est ajouté et le lit
     }
 
@@ -215,27 +274,4 @@ public class ChildPermanentService extends Service {
         }
     }
 
-    private class ServerThread implements Runnable {
-        @Override
-        public void run() {
-            Socket socket = null;
-            try {
-                serverSocket = new ServerSocket(SERVERPORT);
-                //TODO enregistrer l'ip dans la bdd
-                while (!Thread.currentThread().isInterrupted()) {
-                    try {
-                        Log.w("Thread message", "Attente d'un client " + serverSocket.getInetAddress().getHostName());
-                        socket = serverSocket.accept();
-
-                        //TODO lire le fichier
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
 }

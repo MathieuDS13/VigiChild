@@ -22,6 +22,7 @@
     <string name="button_parent_menu_access_data">Access Phone Data</string>
     <string name="send_alert">Send Alert</string>
     <string name="parent_audio_explanation">Record an audio file and send it directly to your child\'s phone to play it. Hit the record button and then the send button when first step is done :</string>
-    <string name="parent_record_audio">Record Audio</string>
+    <string name="parent_record_audio">Start recording</string>
     <string name="parent_send_audio_alert">SEND AUDIO ALERT</string>
+    <string name="start_playing">Start playing</string>
 </resources>

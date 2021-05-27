@@ -33,6 +33,7 @@
         <activity android:name=".parent_mode.ParentMenuActivity" />
         <activity android:name=".parent_mode.ParentLocalisationActivity" />
         <activity android:name=".child_mode.ChildMenuActivity" />
+        <activity android:name=".parent_mode.ParentInteractionActivity" />
 
         <service
             android:name=".child_mode.ChildPermanentService"
