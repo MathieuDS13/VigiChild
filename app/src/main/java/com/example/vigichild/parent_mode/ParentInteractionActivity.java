@@ -62,7 +62,6 @@ public class ParentInteractionActivity extends AppCompatActivity {
                 break;
         }
         if (!permissionToRecordAccepted) finish();
-
     }
 
     @Override
@@ -126,6 +125,7 @@ public class ParentInteractionActivity extends AppCompatActivity {
              String key = mDatabase.child("Data").child("UserData").child(LaunchingApp.currentUser.getRetrieveID()).p;
              mDatabase.child("Data").child("UserData").child(LaunchingApp.currentUser.getRetrieveID()).setValue(loc);
              **/
+            Toast.makeText(getApplicationContext(), "Sending audio", Toast.LENGTH_SHORT).show();
             Uri uri = Uri.fromFile(new File(fileName));
             StorageMetadata metadata = new StorageMetadata.Builder()
                     .setContentType("audio/mpeg")
@@ -146,7 +146,7 @@ public class ParentInteractionActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID()).push().setValue(downloadUri.toString());
+                        mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID()).setValue(downloadUri.toString());
                         Toast.makeText(getApplicationContext(), "Audio sent", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getApplicationContext(), "Failed to send audio", Toast.LENGTH_SHORT).show();
@@ -154,7 +154,6 @@ public class ParentInteractionActivity extends AppCompatActivity {
                 }
             });
 
-            //TODO envoyer sur le serveur database et envoyer le lien sur realtime
         } catch (Exception e) {
             Toast.makeText(getApplicationContext(), "No audio to send", Toast.LENGTH_SHORT).show();
             Log.e(LOG_TAG, "send audio to server failed");

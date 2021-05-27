@@ -28,11 +28,14 @@ import androidx.annotation.Nullable;
 
 import com.example.vigichild.R;
 import com.example.vigichild.core.LaunchingApp;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.net.ServerSocket;
@@ -83,9 +86,9 @@ public class ChildPermanentService extends Service {
 
     private void initializeAudioListener() {
         DatabaseReference ref = mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID());
-        ref.addChildEventListener(new ChildEventListener() {
+        ValueEventListener listener = new ValueEventListener() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+            public void onDataChange(@NonNull DataSnapshot snapshot) {
                 Log.i("Audio Player", "Update received playing audio");
                 Uri uri = Uri.parse(snapshot.getValue(String.class));
                 mPlayer = new MediaPlayer();
@@ -113,11 +116,53 @@ public class ChildPermanentService extends Service {
                         mPlayer = null;
                     }
                 });
+
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError error) {
+                Log.w(TAG, "Load Child GeoData:onCancelled", error.toException());
+            }
+        };
+
+        ref.addValueEventListener(listener);
+
+
+        ref.addChildEventListener(new ChildEventListener() {
+            @Override
+            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
             }
 
             @Override
             public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+                Log.i("Audio Player", "Update received playing audio");
+                Uri uri = Uri.parse(snapshot.getValue(String.class));
+                mPlayer = new MediaPlayer();
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    mPlayer.setAudioAttributes(
+                            new AudioAttributes.Builder()
+                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
+                                    .setUsage(AudioAttributes.USAGE_ALARM)
+                                    .build());
+                }
+                try {
+                    mPlayer.setDataSource(uri.toString());
+                    mPlayer.prepare();
+                    mPlayer.start();
+                } catch (IOException e) {
+                    Log.e("Audio PLayer", "Fail to play audio : " + uri.toString());
+                    e.printStackTrace();
+                }
 
+                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        mPlayer.stop();
+                        mPlayer.release();
+                        mPlayer = null;
+                    }
+                });
             }
 
             @Override
