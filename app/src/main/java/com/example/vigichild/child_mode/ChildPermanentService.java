@@ -86,56 +86,10 @@ public class ChildPermanentService extends Service {
 
     private void initializeAudioListener() {
         DatabaseReference ref = mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID());
-        ValueEventListener listener = new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                Log.i("Audio Player", "Update received playing audio");
-                Uri uri = Uri.parse(snapshot.getValue(String.class));
-                mPlayer = new MediaPlayer();
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    mPlayer.setAudioAttributes(
-                            new AudioAttributes.Builder()
-                                    .setContentType(AudioAttributes.CONTENT_TYPE_SPEECH)
-                                    .setUsage(AudioAttributes.USAGE_ALARM)
-                                    .build());
-                }
-                try {
-                    mPlayer.setDataSource(uri.toString());
-                    mPlayer.prepare();
-                    mPlayer.start();
-                } catch (IOException e) {
-                    Log.e("Audio PLayer", "Fail to play audio : " + uri.toString());
-                    e.printStackTrace();
-                }
-
-                mPlayer.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                    @Override
-                    public void onCompletion(MediaPlayer mp) {
-                        mPlayer.stop();
-                        mPlayer.release();
-                        mPlayer = null;
-                    }
-                });
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
-                Log.w(TAG, "Load Child GeoData:onCancelled", error.toException());
-            }
-        };
-
-        ref.addValueEventListener(listener);
-
 
         ref.addChildEventListener(new ChildEventListener() {
             @Override
             public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
                 Log.i("Audio Player", "Update received playing audio");
                 Uri uri = Uri.parse(snapshot.getValue(String.class));
                 mPlayer = new MediaPlayer();
@@ -163,6 +117,11 @@ public class ChildPermanentService extends Service {
                         mPlayer = null;
                     }
                 });
+            }
+
+            @Override
+            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
+
             }
 
             @Override
@@ -247,7 +206,7 @@ public class ChildPermanentService extends Service {
 
         Notification.Builder builder = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ? new Notification.Builder(this, channelID) : new Notification.Builder(this);
 
-        return builder.setContentTitle("Vigichils Geolocalisation")
+        return builder.setContentTitle("Vigichild Geolocalisation")
                 .setContentText("Your parents are watching you")
                 .setContentIntent(pendingIntent)
                 .setSmallIcon(R.mipmap.ic_launcher)

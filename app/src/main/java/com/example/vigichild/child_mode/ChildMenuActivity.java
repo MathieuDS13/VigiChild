@@ -39,13 +39,6 @@ public class ChildMenuActivity extends AppCompatActivity {
 
         sendAlert = findViewById(R.id.button_child_alert_parent);
         accountSettings = findViewById(R.id.button_child_menu_account);
-        Intent intent = new Intent(this, ChildPermanentService.class);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent);
-            return;
-        }
-
-        startService(intent);
     }
 
     @Override
@@ -57,6 +50,13 @@ public class ChildMenuActivity extends AppCompatActivity {
                     if (ContextCompat.checkSelfPermission(ChildMenuActivity.this,
                             Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                         Toast.makeText(this, "Permission Granted", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(this, ChildPermanentService.class);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            startForegroundService(intent);
+                            return;
+                        }
+
+                        startService(intent);
                     }
                 } else {
                     Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();

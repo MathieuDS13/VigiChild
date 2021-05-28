@@ -17,7 +17,7 @@ public class StartReceiver extends BroadcastReceiver {
     public void onReceive(Context context, Intent intent) {
         SharedPreferences sharedPreferences = context.getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         String mode = sharedPreferences.getString(MODE, null);
-        if (mode == "Child") {
+        if (mode.equals("Child")) {
 
             if (intent.getAction() == Intent.ACTION_BOOT_COMPLETED) {
                 Intent toLaunch = new Intent(context, ChildPermanentService.class);

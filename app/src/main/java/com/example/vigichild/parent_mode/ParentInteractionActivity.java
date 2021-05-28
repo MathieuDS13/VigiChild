@@ -146,7 +146,7 @@ public class ParentInteractionActivity extends AppCompatActivity {
                 public void onComplete(@NonNull Task<Uri> task) {
                     if (task.isSuccessful()) {
                         Uri downloadUri = task.getResult();
-                        mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID()).setValue(downloadUri.toString());
+                        mDatabase.child("Data").child("UserData").child("Audio").child(LaunchingApp.currentUser.getRetrieveID()).push().setValue(downloadUri.toString());
                         Toast.makeText(getApplicationContext(), "Audio sent", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getApplicationContext(), "Failed to send audio", Toast.LENGTH_SHORT).show();
